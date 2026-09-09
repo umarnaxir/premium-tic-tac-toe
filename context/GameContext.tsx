@@ -21,7 +21,7 @@ import { clampName } from "@/lib/gameLogic";
 import { loadSnapshot, saveSnapshot } from "@/lib/storage";
 import { GlobalStyle } from "@/styles/GlobalStyle";
 import { themes } from "@/styles/theme";
-import type { ConfirmRequest, GameMode, PlayerId } from "@/types/game";
+import type { ConfirmRequest, FirstTo, GameMode, PlayerId, StarterMode } from "@/types/game";
 
 interface GameContextValue {
   state: EngineState;
@@ -42,6 +42,9 @@ interface GameContextValue {
   setSound: (sound: boolean) => void;
   setTimedSeconds: (seconds: 30 | 60 | 90) => void;
   setProWin: (length: 4 | 5) => void;
+  setStarter: (starter: StarterMode) => void;
+  setFirstTo: (firstTo: FirstTo) => void;
+  swapMarks: () => void;
   focusCell: (index: number) => void;
   dismissConfirm: () => void;
   resolveConfirm: () => void;
@@ -256,6 +259,20 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: "SET_PRO_WIN", length });
   }, []);
 
+  const setStarter = useCallback((starter: StarterMode) => {
+    dispatch({ type: "SET_STARTER", starter });
+  }, []);
+
+  const setFirstTo = useCallback((firstTo: FirstTo) => {
+    dispatch({ type: "SET_FIRST_TO", firstTo });
+  }, []);
+
+  const swapMarks = useCallback(() => {
+    if (state.moves.length > 0) return;
+    playSound("click", state.settings.sound);
+    dispatch({ type: "SWAP_MARKS" });
+  }, [state.moves.length, state.settings.sound]);
+
   const focusCell = useCallback((index: number) => {
     dispatch({ type: "FOCUS_CELL", index });
   }, []);
@@ -316,6 +333,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       setSound,
       setTimedSeconds,
       setProWin,
+      setStarter,
+      setFirstTo,
+      swapMarks,
       focusCell,
       dismissConfirm,
       resolveConfirm,
@@ -340,6 +360,9 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       setSound,
       setTimedSeconds,
       setProWin,
+      setStarter,
+      setFirstTo,
+      swapMarks,
       focusCell,
       dismissConfirm,
       resolveConfirm,

@@ -7,6 +7,8 @@ export type ThemeName = "light" | "dark";
 export type TimedSeconds = 30 | 60 | 90;
 export type ProWinLength = 4 | 5;
 export type BoardSize = 3 | 5;
+export type StarterMode = "p1" | "p2" | "alternate";
+export type FirstTo = 0 | 3 | 5 | 7;
 
 export type WinningPattern =
   | "Top Row"

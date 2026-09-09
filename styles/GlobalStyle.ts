@@ -27,8 +27,10 @@ export const GlobalStyle = createGlobalStyle`
   body {
     font-family: var(--font-sans), "Outfit", system-ui, sans-serif;
     background:
-      radial-gradient(1200px 700px at 12% -10%, ${({ theme }) => theme.bgAccent}, transparent 55%),
-      radial-gradient(900px 500px at 100% 0%, ${({ theme }) => theme.accentSoft}, transparent 42%),
+      radial-gradient(920px 560px at 8% 12%, ${({ theme }) => theme.oSoft}, transparent 58%),
+      radial-gradient(880px 520px at 94% 18%, ${({ theme }) => theme.xSoft}, transparent 56%),
+      radial-gradient(720px 420px at 50% 108%, ${({ theme }) => theme.accentSoft}, transparent 52%),
+      radial-gradient(640px 380px at 50% -8%, ${({ theme }) => theme.bgAccent}, transparent 62%),
       ${({ theme }) => theme.bg};
     color: ${({ theme }) => theme.text};
     min-height: 100dvh;
@@ -44,6 +46,21 @@ export const GlobalStyle = createGlobalStyle`
     opacity: 0.55;
     mix-blend-mode: overlay;
     z-index: 0;
+  }
+
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      linear-gradient(
+        180deg,
+        transparent 0%,
+        ${({ theme }) => (theme.name === "dark" ? "rgba(10, 11, 14, 0.18)" : "rgba(245, 241, 234, 0.12)")} 48%,
+        transparent 100%
+      );
   }
 
   #__next,

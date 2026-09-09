@@ -4,21 +4,39 @@ import styled, { css } from "styled-components";
 import { useGame } from "@/context/GameContext";
 import { formatClock } from "@/lib/gameLogic";
 import type { PlayerId } from "@/types/game";
-import { warnPulse } from "./ui";
+import { livePulse, warnPulse } from "./ui";
 
-const Wrap = styled.div<{ $low: boolean; $active: boolean }>`
+const Chip = styled.div<{ $mark: "X" | "O"; $low: boolean; $active: boolean }>`
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 8px 2px 0;
-  font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 13px;
-  color: ${({ theme }) => theme.textMuted};
+  gap: 16px;
+  min-width: 148px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: ${({ $mark, theme }) => ($mark === "X" ? theme.xSoft : theme.oSoft)};
+  color: ${({ $mark, theme }) => ($mark === "X" ? theme.x : theme.o)};
+  font-size: 12px;
+  font-weight: 550;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(28, 25, 20, 0.08);
+  }
+
+  ${({ $active }) =>
+    $active &&
+    css`
+      animation: ${livePulse} 1.8s ease infinite;
+    `}
 
   strong {
-    font-size: 18px;
-    color: ${({ theme }) => theme.text};
+    font-family: var(--font-mono), ui-monospace, monospace;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    color: inherit;
     ${({ $low, $active }) =>
       $low &&
       $active &&
@@ -33,29 +51,38 @@ export function Timer({ id }: { id: PlayerId }) {
   if (state.settings.mode !== "timed") return null;
 
   const remaining = state.timers[id];
-  const active = state.status === "playing" && state.currentTurn === id && state.roundStartedAt !== null;
+  const player = state.players[id];
+  const active =
+    state.status === "playing" && state.currentTurn === id && state.roundStartedAt !== null;
 
   return (
-    <Wrap $low={remaining <= 10} $active={active} aria-live={active ? "polite" : "off"}>
-      <span>{state.players[id].name}</span>
+    <Chip
+      $mark={player.mark}
+      $low={remaining <= 10}
+      $active={active}
+      aria-live={active ? "polite" : "off"}
+    >
+      <span>{player.name}</span>
       <strong>{formatClock(remaining)}</strong>
-    </Wrap>
+    </Chip>
   );
 }
 
 const Pair = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 12px;
   width: min(420px, 100%);
 `;
 
 const Caption = styled.p`
-  grid-column: 1 / -1;
+  flex-basis: 100%;
   margin: 0;
   text-align: center;
-  font-size: 11px;
-  letter-spacing: 0.08em;
+  font-size: 10px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: ${({ theme }) => theme.textFaint};
 `;

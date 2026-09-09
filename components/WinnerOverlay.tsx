@@ -4,22 +4,18 @@ import styled from "styled-components";
 import { useGame } from "@/context/GameContext";
 import { fadeUp } from "./ui";
 
-const Banner = styled.div<{ $visible: boolean }>`
-  min-height: 28px;
+const Banner = styled.div`
   text-align: center;
   color: ${({ theme }) => theme.accent};
-  font-size: 13px;
+  font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   animation: ${fadeUp} 400ms ease both;
-  opacity: ${({ $visible }) => ($visible ? 1 : 0)};
 `;
 
 export function WinnerOverlay() {
   const { state } = useGame();
-  if (state.status === "playing") {
-    return <Banner $visible={false} aria-hidden />;
-  }
+  if (state.status === "playing") return null;
 
   const text =
     state.status === "draw"
@@ -28,5 +24,6 @@ export function WinnerOverlay() {
         ? `${state.players[state.winner].name} takes the round`
         : "";
 
-  return <Banner $visible>{text}</Banner>;
+  if (!text) return null;
+  return <Banner>{text}</Banner>;
 }

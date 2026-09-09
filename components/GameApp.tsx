@@ -5,9 +5,9 @@ import { useGame } from "@/context/GameContext";
 import { useKeyboard } from "@/hooks/useKeyboard";
 import { AnalyticsStrip } from "./AnalyticsStrip";
 import { ConfirmationDialog } from "./ConfirmationDialog";
-import { Dock } from "./Dock";
 import { GameBoard } from "./GameBoard";
 import { GameControls } from "./GameControls";
+import { GameFooter } from "./GameFooter";
 import { GameHeader } from "./GameHeader";
 import { MatchScore } from "./MatchScore";
 import { PlayerCard } from "./PlayerCard";
@@ -20,24 +20,33 @@ const Shell = styled.main`
   position: relative;
   z-index: 1;
   min-height: 100dvh;
+  height: 100dvh;
   width: 100%;
   max-width: 1440px;
   margin: 0 auto;
-  padding: 16px 22px 18px;
+  padding: 36px 40px 10px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
+  overflow: hidden;
 
   @media (max-width: 720px) {
-    padding: 12px 12px 18px;
+    height: auto;
+    min-height: 100dvh;
+    padding: 24px 12px 16px;
+    gap: 10px;
+    overflow: auto;
   }
 `;
 
 const Stage = styled.div`
   display: grid;
-  grid-template-columns: minmax(240px, 1fr) minmax(320px, 520px) minmax(240px, 1fr);
-  gap: 16px;
-  align-items: stretch;
+  grid-template-columns: minmax(300px, 380px) minmax(0, 1fr) minmax(300px, 380px);
+  gap: 12px;
+  align-items: start;
+  justify-items: stretch;
+  flex: 1;
+  min-height: 0;
   animation: ${fadeUp} 600ms ease both;
 
   @media (max-width: 1100px) {
@@ -45,6 +54,9 @@ const Stage = styled.div`
     grid-template-areas:
       "board board"
       "p1 p2";
+    gap: 16px;
+    flex: none;
+    align-items: start;
   }
 
   @media (max-width: 720px) {
@@ -53,17 +65,25 @@ const Stage = styled.div`
       "board"
       "p1"
       "p2";
+    gap: 12px;
   }
 `;
 
 const Side = styled.div<{ $area?: string }>`
   display: flex;
   flex-direction: column;
-  gap: 12px;
   min-width: 0;
+  min-height: 0;
+  height: auto;
+  padding: 0 6px;
 
   @media (max-width: 1100px) {
     grid-area: ${({ $area }) => $area};
+    height: auto;
+    max-width: 420px;
+    justify-self: center;
+    width: 100%;
+    padding: 0 8px;
   }
 `;
 
@@ -71,12 +91,16 @@ const Center = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 14px;
+  justify-content: flex-start;
+  gap: 6px;
   min-width: 0;
+  min-height: 0;
+  width: 100%;
+  height: 100%;
 
   @media (max-width: 1100px) {
     grid-area: board;
+    height: auto;
   }
 `;
 
@@ -106,6 +130,7 @@ export function GameApp() {
     return (
       <Shell>
         <GameHeader />
+        <GameFooter />
       </Shell>
     );
   }
@@ -126,14 +151,14 @@ export function GameApp() {
           <TimerPair />
           <GameBoard />
           <WinnerOverlay />
-          <GameControls />
         </Center>
         <Side $area="p2">
           <PlayerCard id="p2" />
         </Side>
       </Stage>
+      <GameControls />
       <AnalyticsStrip />
-      <Dock />
+      <GameFooter />
       <ConfirmationDialog />
     </Shell>
   );

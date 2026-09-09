@@ -11,14 +11,14 @@ const Backdrop = styled.div`
   display: grid;
   place-items: center;
   padding: 24px;
-  z-index: 40;
+  z-index: 80;
 `;
 
 const Card = styled.div`
   width: min(420px, 100%);
   background: ${({ theme }) => theme.surfaceRaised};
   border: 1px solid ${({ theme }) => theme.border};
-  border-radius: 22px;
+  border-radius: 8px;
   padding: 24px;
   box-shadow: ${({ theme }) => theme.shadow};
 `;

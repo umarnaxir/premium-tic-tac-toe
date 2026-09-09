@@ -19,9 +19,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Arena — Premium Tic-Tac-Toe",
+  title: "Xsu — Premium Tic-Tac-Toe",
   description:
-    "A premium local two-player Tic-Tac-Toe atelier with match history, analytics, timed play, and persistent profiles.",
+    "A premium local two-player Tic-Tac-Toe studio with match history, analytics, timed play, and persistent player names.",
 };
 
 const themeBoot = `

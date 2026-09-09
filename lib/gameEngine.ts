@@ -1,4 +1,4 @@
-import type { ConfirmRequest, GameMode, PlayerId } from "@/types/game";
+import type { ConfirmRequest, FirstTo, GameMode, PlayerId, StarterMode } from "@/types/game";
 import { DEFAULT_ANALYTICS, DEFAULT_P1, DEFAULT_P2 } from "./constants";
 import {
   cellLabel,
@@ -33,6 +33,9 @@ export type GameAction =
   | { type: "SET_MODE"; mode: GameMode }
   | { type: "SET_TIMED_SECONDS"; seconds: 30 | 60 | 90 }
   | { type: "SET_PRO_WIN"; length: 4 | 5 }
+  | { type: "SET_STARTER"; starter: StarterMode }
+  | { type: "SET_FIRST_TO"; firstTo: FirstTo }
+  | { type: "SWAP_MARKS" }
   | { type: "TICK"; amount: number }
   | { type: "TIMEOUT" }
   | { type: "FOCUS_CELL"; index: number }
@@ -51,12 +54,22 @@ export function createEngineState(): EngineState {
   return { ...createInitialSnapshot(), confirm: null };
 }
 
+function nextStarter(state: EngineState, incrementRound: boolean): PlayerId {
+  const starter = state.settings.starter;
+  if (starter === "p2") return "p2";
+  if (starter === "alternate") {
+    const round = incrementRound ? state.round + 1 : state.round;
+    return round % 2 === 1 ? "p1" : "p2";
+  }
+  return "p1";
+}
+
 function freshBoard(state: EngineState, incrementRound: boolean): EngineState {
   const size = getBoardSize(state.settings.mode);
   return {
     ...state,
     board: createEmptyBoard(size),
-    currentTurn: "p1",
+    currentTurn: nextStarter(state, incrementRound),
     status: "playing",
     winner: null,
     winningLine: null,
@@ -299,7 +312,7 @@ export function gameReducer(state: EngineState, action: GameAction): EngineState
       return {
         ...state,
         board: createEmptyBoard(size),
-        currentTurn: "p1",
+        currentTurn: nextStarter(state, false),
         status: "playing",
         winner: null,
         winningLine: null,
@@ -326,8 +339,16 @@ export function gameReducer(state: EngineState, action: GameAction): EngineState
         players: action.keepHistory
           ? state.players
           : {
-              p1: { ...DEFAULT_P1, name: state.players.p1.name },
-              p2: { ...DEFAULT_P2, name: state.players.p2.name },
+              p1: {
+                ...DEFAULT_P1,
+                name: state.players.p1.name,
+                mark: state.players.p1.mark,
+              },
+              p2: {
+                ...DEFAULT_P2,
+                name: state.players.p2.name,
+                mark: state.players.p2.mark,
+              },
             },
       };
     }
@@ -348,8 +369,16 @@ export function gameReducer(state: EngineState, action: GameAction): EngineState
           modeCounts: { classic: 0, pro: 0, timed: 0 },
         },
         players: {
-          p1: { ...DEFAULT_P1, name: state.players.p1.name },
-          p2: { ...DEFAULT_P2, name: state.players.p2.name },
+          p1: {
+            ...DEFAULT_P1,
+            name: state.players.p1.name,
+            mark: state.players.p1.mark,
+          },
+          p2: {
+            ...DEFAULT_P2,
+            name: state.players.p2.name,
+            mark: state.players.p2.mark,
+          },
         },
         confirm: null,
       };
@@ -408,6 +437,39 @@ export function gameReducer(state: EngineState, action: GameAction): EngineState
         ...state,
         settings: { ...state.settings, proWinLength: action.length },
       };
+
+    case "SET_STARTER":
+      return {
+        ...state,
+        settings: { ...state.settings, starter: action.starter },
+        currentTurn:
+          state.moves.length === 0 && state.status === "playing"
+            ? action.starter === "p2"
+              ? "p2"
+              : action.starter === "alternate"
+                ? state.round % 2 === 1
+                  ? "p1"
+                  : "p2"
+                : "p1"
+            : state.currentTurn,
+      };
+
+    case "SET_FIRST_TO":
+      return {
+        ...state,
+        settings: { ...state.settings, firstTo: action.firstTo },
+      };
+
+    case "SWAP_MARKS": {
+      if (state.moves.length > 0) return state;
+      return {
+        ...state,
+        players: {
+          p1: { ...state.players.p1, mark: state.players.p2.mark },
+          p2: { ...state.players.p2, mark: state.players.p1.mark },
+        },
+      };
+    }
 
     case "TICK": {
       if (state.settings.mode !== "timed" || state.status !== "playing") {

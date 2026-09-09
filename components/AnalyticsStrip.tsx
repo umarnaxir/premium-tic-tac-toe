@@ -8,17 +8,41 @@ import { longestCareerStreak, mostPlayedMode } from "@/lib/statistics";
 const Strip = styled.div`
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 18px;
-  padding: 12px 16px;
-  border-radius: 16px;
+  gap: 10px 22px;
+  padding: 10px 16px;
+  border-radius: 12px;
   background: ${({ theme }) => theme.surface};
   border: 1px solid ${({ theme }) => theme.border};
   color: ${({ theme }) => theme.textMuted};
-  font-size: 12px;
+  font-size: 11px;
+  flex: none;
+  position: relative;
+  z-index: 3;
   letter-spacing: 0.04em;
+  transition: border-color 180ms ease, box-shadow 180ms ease;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.borderStrong};
+    box-shadow: 0 8px 20px rgba(28, 25, 20, 0.06);
+  }
+
+  @media (max-width: 720px) {
+    gap: 6px 10px;
+    padding: 8px 10px;
+  }
 `;
 
 const Chip = styled.span`
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: transform 160ms ease, background 160ms ease, color 160ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+    background: ${({ theme }) => theme.surfaceMuted};
+    color: ${({ theme }) => theme.text};
+  }
+
   strong {
     color: ${({ theme }) => theme.text};
     font-weight: 560;

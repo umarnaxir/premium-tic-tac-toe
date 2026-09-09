@@ -1,4 +1,11 @@
-import type { GameMode, ProWinLength, ThemeName, TimedSeconds } from "./game";
+import type {
+  FirstTo,
+  GameMode,
+  ProWinLength,
+  StarterMode,
+  ThemeName,
+  TimedSeconds,
+} from "./game";
 
 export interface Settings {
   theme: ThemeName;
@@ -6,4 +13,6 @@ export interface Settings {
   mode: GameMode;
   timedSeconds: TimedSeconds;
   proWinLength: ProWinLength;
+  starter: StarterMode;
+  firstTo: FirstTo;
 }

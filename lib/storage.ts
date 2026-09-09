@@ -12,11 +12,13 @@ import type { MatchScore, Player, PlayersState } from "@/types/player";
 import type {
   CellValue,
   ConfirmRequest,
+  FirstTo,
   GameMode,
   GameStatus,
   Move,
   PlayerId,
   ProWinLength,
+  StarterMode,
   ThemeName,
   TimedSeconds,
   WinningPattern,
@@ -94,7 +96,7 @@ function parsePlayer(value: unknown, fallback: Player): Player {
   return {
     id: fallback.id,
     name: name || fallback.name,
-    mark: fallback.mark,
+    mark: value.mark === "O" || value.mark === "X" ? value.mark : fallback.mark,
     wins: Math.max(0, asNumber(value.wins, 0)),
     losses: Math.max(0, asNumber(value.losses, 0)),
     draws: Math.max(0, asNumber(value.draws, 0)),
@@ -102,6 +104,16 @@ function parsePlayer(value: unknown, fallback: Player): Player {
     bestStreak: Math.max(0, asNumber(value.bestStreak, 0)),
     roundsWon: Math.max(0, asNumber(value.roundsWon, 0)),
   };
+}
+
+function parseStarter(value: unknown): StarterMode {
+  if (value === "p2" || value === "alternate" || value === "p1") return value;
+  return "p1";
+}
+
+function parseFirstTo(value: unknown): FirstTo {
+  if (value === 3 || value === 5 || value === 7 || value === 0) return value;
+  return 0;
 }
 
 function parseSettings(value: unknown): Settings {
@@ -112,6 +124,8 @@ function parseSettings(value: unknown): Settings {
     mode: parseMode(value.mode),
     timedSeconds: parseTimed(value.timedSeconds),
     proWinLength: parseProWin(value.proWinLength),
+    starter: parseStarter(value.starter),
+    firstTo: parseFirstTo(value.firstTo),
   };
 }
 

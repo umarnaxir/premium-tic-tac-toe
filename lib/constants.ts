@@ -1,7 +1,7 @@
 import type { Analytics } from "@/types/history";
 import type { Settings } from "@/types/settings";
 import type { Player } from "@/types/player";
-import type { GameMode, TimedSeconds } from "@/types/game";
+import type { FirstTo, GameMode, StarterMode, TimedSeconds } from "@/types/game";
 
 export const STORAGE_KEY = "arena.v1";
 export const STORAGE_VERSION = 1;
@@ -12,6 +12,8 @@ export const DEFAULT_SETTINGS: Settings = {
   mode: "classic",
   timedSeconds: 60,
   proWinLength: 4,
+  starter: "p1",
+  firstTo: 0,
 };
 
 export const DEFAULT_P1: Player = {
@@ -57,6 +59,14 @@ export const MODE_LABELS: Record<GameMode, string> = {
 };
 
 export const TIMED_OPTIONS: TimedSeconds[] = [30, 60, 90];
+
+export const STARTER_LABELS: Record<StarterMode, string> = {
+  p1: "Player 1",
+  p2: "Player 2",
+  alternate: "Alternate",
+};
+
+export const FIRST_TO_OPTIONS: FirstTo[] = [0, 3, 5, 7];
 
 export const KEYBOARD_HINTS = [
   { key: "1–9", label: "Place mark" },

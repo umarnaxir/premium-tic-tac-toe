@@ -14,22 +14,36 @@ const drawLine = keyframes`
 
 const Frame = styled.div<{ $size: number }>`
   position: relative;
-  width: min(44vh, 400px, 100%);
+  width: min(100%, calc(100dvh - 480px), 460px);
   display: grid;
   grid-template-columns: repeat(${({ $size }) => $size}, 1fr);
-  gap: ${({ $size }) => ($size === 5 ? "8px" : "10px")};
-  padding: 14px;
-  border-radius: 28px;
+  gap: ${({ $size }) => ($size === 5 ? "8px" : "14px")};
+  padding: 16px;
+  border-radius: 22px;
   background: ${({ theme }) => theme.surfaceMuted};
   border: 1px solid ${({ theme }) => theme.border};
+  box-shadow: ${({ theme }) => theme.shadow};
   animation: ${fadeUp} 560ms ease both;
+  transition: transform 240ms ease, box-shadow 240ms ease, border-color 240ms ease;
+
+  &:hover {
+    transform: translateY(-3px);
+    border-color: ${({ theme }) => theme.borderStrong};
+    box-shadow: 0 22px 48px rgba(28, 25, 20, 0.12);
+  }
+
+  @media (max-width: 720px) {
+    width: min(100%, 400px);
+    padding: 12px;
+    border-radius: 18px;
+  }
 `;
 
 const LineSvg = styled.svg`
   position: absolute;
-  inset: 14px;
-  width: calc(100% - 28px);
-  height: calc(100% - 28px);
+  inset: 16px;
+  width: calc(100% - 32px);
+  height: calc(100% - 32px);
   pointer-events: none;
   overflow: visible;
 
@@ -78,6 +92,8 @@ export function GameBoard() {
     node?.focus({ preventScroll: true });
   }, [state.focusedIndex]);
 
+  const currentMark = state.players[state.currentTurn].mark;
+
   return (
     <Frame
       ref={frameRef}
@@ -97,6 +113,7 @@ export function GameBoard() {
             dimmed={ended && Boolean(state.winningLine) && !winning}
             focused={state.focusedIndex === index}
             disabled={ended || Boolean(value)}
+            preview={!ended && !value ? currentMark : null}
             onSelect={(next) => {
               focusCell(next);
               place(next);

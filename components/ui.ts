@@ -15,6 +15,16 @@ export const pulseSoft = keyframes`
   50% { opacity: 0.55; }
 `;
 
+export const livePulse = keyframes`
+  0%, 100% { box-shadow: 0 0 0 0 rgba(196, 164, 106, 0.0); }
+  50% { box-shadow: 0 0 0 6px rgba(196, 164, 106, 0.18); }
+`;
+
+export const ghostIn = keyframes`
+  from { opacity: 0; transform: scale(0.86); }
+  to { opacity: 0.28; transform: scale(1); }
+`;
+
 export const scorePop = keyframes`
   0% { transform: scale(1); }
   40% { transform: scale(1.12); }
@@ -31,18 +41,51 @@ export const warnPulse = keyframes`
   50% { color: #C97A6C; }
 `;
 
+export const turnGlow = keyframes`
+  0%, 100% {
+    opacity: 1;
+    text-shadow: 0 0 0 transparent;
+    letter-spacing: 0.22em;
+  }
+  50% {
+    opacity: 0.62;
+    text-shadow: 0 0 14px currentColor;
+    letter-spacing: 0.32em;
+  }
+`;
+
+export const waitPulse = keyframes`
+  0%, 100% { opacity: 0.38; }
+  50% { opacity: 0.82; }
+`;
+
+export const markBob = keyframes`
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-2px) rotate(-6deg); }
+`;
+
+export const shineSweep = keyframes`
+  0% { transform: translateX(-120%) rotate(12deg); }
+  100% { transform: translateX(220%) rotate(12deg); }
+`;
+
+export const avatarPulse = keyframes`
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+`;
+
 export const Panel = styled.section`
   background: ${({ theme }) => theme.surface};
   border: 1px solid ${({ theme }) => theme.border};
   box-shadow: ${({ theme }) => theme.shadow}, ${({ theme }) => theme.inset};
-  border-radius: 22px;
-  padding: 18px;
+  border-radius: 16px;
+  padding: 14px;
   min-width: 0;
 `;
 
 export const Eyebrow = styled.p`
-  margin: 0 0 8px;
-  font-size: 10px;
+  margin: 0 0 4px;
+  font-size: 9px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
   color: ${({ theme }) => theme.textFaint};
@@ -50,7 +93,7 @@ export const Eyebrow = styled.p`
 `;
 
 export const Label = styled.span`
-  font-size: 11px;
+  font-size: 9px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: ${({ theme }) => theme.textMuted};
@@ -62,24 +105,26 @@ export const buttonBase = css`
   background: ${({ theme }) => theme.surfaceRaised};
   color: ${({ theme }) => theme.text};
   border-radius: 12px;
-  padding: 9px 12px;
-  font-size: 12px;
+  padding: 8px 12px;
+  font-size: 10px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   transition:
-    transform 160ms ease,
-    background 160ms ease,
-    border-color 160ms ease,
-    color 160ms ease;
-  min-height: 36px;
+    transform 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease;
+  min-height: 34px;
 
   &:hover:not(:disabled) {
     border-color: ${({ theme }) => theme.borderStrong};
-    transform: translateY(-1px);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(28, 25, 20, 0.12);
   }
 
   &:active:not(:disabled) {
-    transform: translateY(0);
+    transform: translateY(0) scale(0.98);
   }
 
   &:disabled {
@@ -98,6 +143,11 @@ export const Button = styled.button<{ $tone?: "primary" | "ghost" | "danger" }>`
       color: ${theme.accentText};
       border-color: transparent;
       font-weight: 650;
+
+      &:hover:not(:disabled) {
+        filter: brightness(1.06);
+        box-shadow: 0 8px 20px rgba(184, 154, 106, 0.32);
+      }
     `}
 
   ${({ $tone }) =>
@@ -117,18 +167,23 @@ export const Button = styled.button<{ $tone?: "primary" | "ghost" | "danger" }>`
 
 export const IconButton = styled.button`
   ${buttonBase};
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
+  min-height: 34px;
   padding: 0;
   display: grid;
   place-items: center;
-  border-radius: 50%;
+  border-radius: 10px;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.06);
+  }
 `;
 
 export const StatGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px 12px;
+  gap: 6px 12px;
 `;
 
 export const StatItem = styled.div`
@@ -139,7 +194,7 @@ export const StatItem = styled.div`
 
 export const StatValue = styled.strong`
   font-family: var(--font-mono), ui-monospace, monospace;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 550;
   color: ${({ theme }) => theme.text};
 `;
@@ -172,10 +227,14 @@ export const PillRow = styled.div`
 
 export const Pill = styled.button<{ $active?: boolean }>`
   ${buttonBase};
-  min-height: 32px;
-  padding: 6px 10px;
-  border-radius: 999px;
+  min-height: 28px;
+  padding: 4px 8px;
+  border-radius: 12px;
   background: ${({ $active, theme }) => ($active ? theme.text : theme.surfaceMuted)};
   color: ${({ $active, theme }) => ($active ? theme.bg : theme.textMuted)};
   border-color: transparent;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px) scale(1.03);
+  }
 `;

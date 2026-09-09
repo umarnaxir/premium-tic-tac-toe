@@ -198,3 +198,20 @@ export function clampName(value: string): string {
   if (!trimmed) return "";
   return trimmed.slice(0, 18);
 }
+
+export function initials(name: string): string {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0]!.slice(0, 2).toUpperCase();
+  return `${parts[0]![0] ?? ""}${parts[1]![0] ?? ""}`.toUpperCase();
+}
+
+export function seriesLeader(
+  firstTo: number,
+  score: { p1: number; p2: number },
+): "p1" | "p2" | null {
+  if (firstTo <= 0) return null;
+  if (score.p1 >= firstTo && score.p1 > score.p2) return "p1";
+  if (score.p2 >= firstTo && score.p2 > score.p1) return "p2";
+  return null;
+}

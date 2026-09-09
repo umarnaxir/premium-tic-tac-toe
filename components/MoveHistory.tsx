@@ -11,7 +11,7 @@ const List = styled.ol`
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 240px;
+  max-height: min(52vh, 480px);
   overflow: auto;
 `;
 

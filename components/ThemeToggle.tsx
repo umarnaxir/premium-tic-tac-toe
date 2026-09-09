@@ -6,6 +6,10 @@ import { IconButton } from "./ui";
 
 const Button = styled(IconButton)`
   font-size: 15px;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px) rotate(12deg) scale(1.08);
+  }
 `;
 
 export function ThemeToggle() {

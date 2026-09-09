@@ -2,8 +2,14 @@
 
 import styled from "styled-components";
 import { useGame } from "@/context/GameContext";
-import { KEYBOARD_HINTS, MODE_LABELS, TIMED_OPTIONS } from "@/lib/constants";
-import type { GameMode } from "@/types/game";
+import {
+  FIRST_TO_OPTIONS,
+  KEYBOARD_HINTS,
+  MODE_LABELS,
+  STARTER_LABELS,
+  TIMED_OPTIONS,
+} from "@/lib/constants";
+import type { FirstTo, GameMode, StarterMode } from "@/types/game";
 import { Button, Eyebrow, Label, Pill, PillRow } from "./ui";
 
 const Stack = styled.div`
@@ -41,6 +47,10 @@ const Keys = styled.ul`
     font-weight: 550;
     margin-right: 6px;
   }
+
+  @media (max-width: 520px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 export function GameSettings() {
@@ -49,6 +59,9 @@ export function GameSettings() {
     requestModeChange,
     setTimedSeconds,
     setProWin,
+    setStarter,
+    setFirstTo,
+    swapMarks,
     requestClearHistory,
     clickSound,
   } = useGame();
@@ -115,6 +128,53 @@ export function GameSettings() {
           </PillRow>
         </Group>
       )}
+
+      <Group>
+        <Label>Who starts</Label>
+        <PillRow>
+          {(Object.keys(STARTER_LABELS) as StarterMode[]).map((starter) => (
+            <Pill
+              key={starter}
+              type="button"
+              $active={state.settings.starter === starter}
+              onClick={() => {
+                clickSound();
+                setStarter(starter);
+              }}
+            >
+              {starter === "p1"
+                ? state.players.p1.name
+                : starter === "p2"
+                  ? state.players.p2.name
+                  : "Alternate"}
+            </Pill>
+          ))}
+        </PillRow>
+      </Group>
+
+      <Group>
+        <Label>Series</Label>
+        <PillRow>
+          {FIRST_TO_OPTIONS.map((value: FirstTo) => (
+            <Pill
+              key={value}
+              type="button"
+              $active={state.settings.firstTo === value}
+              onClick={() => {
+                clickSound();
+                setFirstTo(value);
+              }}
+            >
+              {value === 0 ? "Unlimited" : `First to ${value}`}
+            </Pill>
+          ))}
+        </PillRow>
+      </Group>
+
+      <Button type="button" onClick={swapMarks} disabled={state.moves.length > 0}>
+        Swap X and O
+      </Button>
+      <Hint>Marks can be swapped before the first move of a round.</Hint>
 
       <Group>
         <Eyebrow>Keyboard</Eyebrow>
