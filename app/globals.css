@@ -1,0 +1,15 @@
+html,
+body {
+  margin: 0;
+  padding: 0;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+html[data-theme="dark"] {
+  background: #0a0b0e;
+}
+
+html[data-theme="light"] {
+  background: #efeae1;
+}
