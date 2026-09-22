@@ -17,6 +17,13 @@ const Bar = styled.header`
   padding: 0 2px;
   flex: none;
   animation: ${fadeUp} 520ms ease both;
+
+  @media (max-width: 720px) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 10px 8px;
+  }
 `;
 
 const Brand = styled.div`
@@ -24,6 +31,11 @@ const Brand = styled.div`
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+
+  @media (max-width: 720px) {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
 `;
 
 const Meta = styled.p`
@@ -32,6 +44,12 @@ const Meta = styled.p`
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+
+  @media (max-width: 720px) {
+    font-size: 10px;
+    line-height: 1.45;
+    text-align: center;
+  }
 `;
 
 const Tools = styled.div`
@@ -41,6 +59,11 @@ const Tools = styled.div`
   flex: none;
   position: relative;
   z-index: 20;
+
+  @media (max-width: 720px) {
+    grid-column: 2;
+    grid-row: 1;
+  }
 `;
 
 export function GameHeader() {

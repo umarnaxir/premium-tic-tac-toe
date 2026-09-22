@@ -74,7 +74,6 @@ export function TurnIndicator() {
 
   return (
     <Wrap role="status" aria-live="polite">
-      <Kicker>Now playing · {current.mark}</Kicker>
       <Status $tone="play">
         {current.name}&apos;s Turn <MarkHint $mark={current.mark}>{current.mark}</MarkHint>
       </Status>

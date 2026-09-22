@@ -34,9 +34,12 @@ const Row = styled.div`
     justify-content: space-between;
     align-items: center;
     gap: 6px;
+    width: min(100%, 340px);
+    margin-right: auto;
+    margin-left: auto;
     margin-top: 0;
-    padding: 8px 10px;
-    border-radius: 22px;
+    padding: 6px 8px;
+    border-radius: 20px;
     background: ${({ theme }) => theme.surface};
     border: 1px solid ${({ theme }) => theme.border};
     box-shadow: ${({ theme }) => theme.shadow};
@@ -45,12 +48,12 @@ const Row = styled.div`
       flex: 1 1 0;
       width: auto;
       min-width: 0;
-      max-width: 48px;
-      min-height: 42px;
-      height: 42px;
+      max-width: 40px;
+      min-height: 40px;
+      height: 40px;
       padding: 0;
       border-radius: 50%;
-      font-size: 16px;
+      font-size: 15px;
       letter-spacing: 0;
       text-transform: none;
       transition:

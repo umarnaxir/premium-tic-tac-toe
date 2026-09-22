@@ -33,7 +33,7 @@ const Frame = styled.div<{ $size: number }>`
   }
 
   @media (max-width: 720px) {
-    width: min(100%, 400px);
+    width: min(calc(100% - 16px), 380px);
     padding: 12px;
     border-radius: 18px;
   }

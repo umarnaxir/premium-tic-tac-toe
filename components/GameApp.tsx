@@ -66,11 +66,12 @@ const Stage = styled.div`
   }
 
   @media (max-width: 720px) {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
       "board board"
       "controls controls"
-      "p1 p2";
+      "p1 p1"
+      "p2 p2";
     gap: 10px;
   }
 `;

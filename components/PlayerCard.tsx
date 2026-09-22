@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import styled, { css } from "styled-components";
 import { useGame } from "@/context/GameContext";
@@ -67,7 +67,7 @@ const Card = styled(Panel)<{ $active: boolean; $mark: "X" | "O"; $id: PlayerId }
   }
 `;
 
-const Watermark = styled.span<{ $mark: "X" | "O" }>`
+const Watermark = styled.span<{ $mark: "X" | "O"; $id: PlayerId }>`
   position: absolute;
   right: 4px;
   bottom: -16px;
@@ -87,8 +87,9 @@ const Watermark = styled.span<{ $mark: "X" | "O" }>`
   }
 
   @media (max-width: 720px) {
+    ${({ $id }) => ($id === "p2" ? "left: 4px; right: auto;" : "")}
     font-size: 72px;
-    bottom: -12px;
+    bottom: 2px;
     opacity: 0.1;
   }
 `;
@@ -198,6 +199,10 @@ const EditOrb = styled.button<{ $mark: "X" | "O"; $active: boolean }>`
 
   @media (max-width: 720px) {
     display: grid;
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+    border-width: 1px;
   }
 `;
 
@@ -218,7 +223,12 @@ const Name = styled.h2`
   white-space: nowrap;
 
   @media (max-width: 720px) {
-    font-size: 18px;
+    font-size: clamp(22px, 7vw, 28px);
+    line-height: 1.05;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    overflow-wrap: anywhere;
   }
 `;
 
@@ -268,20 +278,25 @@ const MarkBadge = styled.div<{ $mark: "X" | "O" }>`
   }
 
   @media (max-width: 720px) {
-    width: 38px;
-    height: 38px;
-    font-size: 22px;
-    border-radius: 10px;
+    width: 28px;
+    height: 28px;
+    font-size: 17px;
+    border-radius: 8px;
   }
 `;
 
-const ScoreRow = styled.div`
+const ScoreRow = styled.div<{ $id: PlayerId }>`
   position: relative;
   z-index: 1;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 8px;
+
+  @media (max-width: 720px) {
+    justify-content: ${({ $id }) => ($id === "p2" ? "flex-end" : "flex-start")};
+    text-align: ${({ $id }) => ($id === "p2" ? "right" : "left")};
+  }
 `;
 
 const Score = styled.div<{ $pulse: boolean }>`
@@ -345,6 +360,7 @@ const Backdrop = styled.div`
   display: grid;
   place-items: end center;
   padding: 0;
+  overscroll-behavior: contain;
 
   @media (min-width: 721px) {
     place-items: center;
@@ -364,6 +380,7 @@ const Sheet = styled.div`
   flex-direction: column;
   gap: 14px;
   overflow: auto;
+  overscroll-behavior: contain;
 
   @media (min-width: 721px) {
     border-radius: 16px;
@@ -371,7 +388,30 @@ const Sheet = styled.div`
   }
 `;
 
+const MobileSheetClose = styled.button`
+  display: none;
+
+  @media (max-width: 720px) {
+    appearance: none;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid ${({ theme }) => theme.border};
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: ${({ theme }) => theme.surfaceMuted};
+    color: ${({ theme }) => theme.text};
+    font-size: 20px;
+    line-height: 1;
+    position: absolute;
+    top: 4px;
+    right: 0;
+  }
+`;
+
 const SheetHead = styled.div`
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -398,6 +438,10 @@ const SheetMark = styled.span<{ $mark: "X" | "O" }>`
   background: ${({ $mark, theme }) => ($mark === "X" ? theme.xSoft : theme.oSoft)};
   color: ${({ $mark, theme }) => ($mark === "X" ? theme.x : theme.o)};
   border: 1px solid currentColor;
+
+  @media (max-width: 720px) {
+    margin-right: 42px;
+  }
 `;
 
 const SheetActions = styled.div`
@@ -462,21 +506,27 @@ export function PlayerCard({ id }: { id: PlayerId }) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [draft, setDraft] = useState(player.name);
   const [saved, setSaved] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const sheetInputRef = useRef<HTMLInputElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
   const active = state.status === "playing" && state.currentTurn === id;
   const pulse = state.status !== "playing" && state.winner === id;
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
     if (!sheetOpen) return;
+    previousFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const focusInput = window.requestAnimationFrame(() => sheetInputRef.current?.focus());
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") setSheetOpen(false);
     };
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    return () => {
+      window.cancelAnimationFrame(focusInput);
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = originalOverflow;
+      previousFocusRef.current?.focus();
+    };
   }, [sheetOpen]);
 
   const startEdit = () => {
@@ -523,7 +573,7 @@ export function PlayerCard({ id }: { id: PlayerId }) {
 
   return (
     <Card $active={active} $mark={player.mark} $id={id} aria-label={`${player.name}, ${player.mark}`}>
-      <Watermark $mark={player.mark} aria-hidden>
+      <Watermark $mark={player.mark} $id={id} aria-hidden>
         {player.mark}
       </Watermark>
       <TurnRail $on={active} $id={id} $mark={player.mark}>
@@ -587,7 +637,7 @@ export function PlayerCard({ id }: { id: PlayerId }) {
         </Actions>
       )}
 
-      <ScoreRow>
+      <ScoreRow $id={id}>
         <div>
           <Label>Match score</Label>
           <Score $pulse={pulse} aria-label={`${player.name} match score ${state.matchScore[id]}`}>
@@ -600,7 +650,7 @@ export function PlayerCard({ id }: { id: PlayerId }) {
         <PlayerStats id={id} />
       </Stats>
 
-      {mounted && sheetOpen
+      {sheetOpen
         ? createPortal(
             <Backdrop role="presentation" onClick={closeSheet}>
               <Sheet
@@ -614,13 +664,16 @@ export function PlayerCard({ id }: { id: PlayerId }) {
                   <SheetMark $mark={player.mark} aria-hidden>
                     {player.mark}
                   </SheetMark>
+                  <MobileSheetClose type="button" onClick={closeSheet} aria-label="Close player editor">
+                    ×
+                  </MobileSheetClose>
                 </SheetHead>
 
                 <div>
                   <Label>Player name</Label>
                   <NameInput
+                    ref={sheetInputRef}
                     value={draft}
-                    autoFocus
                     maxLength={18}
                     placeholder={id === "p1" ? "e.g. Umar" : "e.g. Ahmad"}
                     aria-label={`Edit ${id === "p1" ? "player one" : "player two"} name`}
