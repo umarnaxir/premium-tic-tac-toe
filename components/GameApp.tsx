@@ -33,8 +33,8 @@ const Shell = styled.main`
   @media (max-width: 720px) {
     height: auto;
     min-height: 100dvh;
-    padding: 24px 12px 16px;
-    gap: 10px;
+    padding: 16px 12px calc(16px + env(safe-area-inset-bottom, 0px));
+    gap: 12px;
     overflow: auto;
   }
 `;
@@ -42,6 +42,10 @@ const Shell = styled.main`
 const Stage = styled.div`
   display: grid;
   grid-template-columns: minmax(300px, 380px) minmax(0, 1fr) minmax(300px, 380px);
+  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "p1 board p2"
+    "controls controls controls";
   gap: 12px;
   align-items: start;
   justify-items: stretch;
@@ -51,8 +55,10 @@ const Stage = styled.div`
 
   @media (max-width: 1100px) {
     grid-template-columns: 1fr 1fr;
+    grid-template-rows: none;
     grid-template-areas:
       "board board"
+      "controls controls"
       "p1 p2";
     gap: 16px;
     flex: none;
@@ -60,16 +66,17 @@ const Stage = styled.div`
   }
 
   @media (max-width: 720px) {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
     grid-template-areas:
-      "board"
-      "p1"
-      "p2";
-    gap: 12px;
+      "board board"
+      "controls controls"
+      "p1 p2";
+    gap: 10px;
   }
 `;
 
 const Side = styled.div<{ $area?: string }>`
+  grid-area: ${({ $area }) => $area};
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -78,16 +85,21 @@ const Side = styled.div<{ $area?: string }>`
   padding: 0 6px;
 
   @media (max-width: 1100px) {
-    grid-area: ${({ $area }) => $area};
     height: auto;
     max-width: 420px;
     justify-self: center;
     width: 100%;
     padding: 0 8px;
   }
+
+  @media (max-width: 720px) {
+    max-width: none;
+    padding: 0;
+  }
 `;
 
 const Center = styled.div`
+  grid-area: board;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -99,9 +111,18 @@ const Center = styled.div`
   height: 100%;
 
   @media (max-width: 1100px) {
-    grid-area: board;
     height: auto;
   }
+
+  @media (max-width: 720px) {
+    gap: 8px;
+  }
+`;
+
+const ControlsSlot = styled.div`
+  grid-area: controls;
+  width: 100%;
+  min-width: 0;
 `;
 
 const ScreenReader = styled.p`
@@ -155,8 +176,10 @@ export function GameApp() {
         <Side $area="p2">
           <PlayerCard id="p2" />
         </Side>
+        <ControlsSlot>
+          <GameControls />
+        </ControlsSlot>
       </Stage>
-      <GameControls />
       <AnalyticsStrip />
       <GameFooter />
       <ConfirmationDialog />

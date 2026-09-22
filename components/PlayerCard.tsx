@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import styled, { css } from "styled-components";
 import { useGame } from "@/context/GameContext";
 import { initials } from "@/lib/gameLogic";
@@ -57,8 +58,12 @@ const Card = styled(Panel)<{ $active: boolean; $mark: "X" | "O"; $id: PlayerId }
     `}
 
   @media (max-width: 720px) {
-    padding: 14px;
-    gap: 10px;
+    padding: 12px 14px;
+    gap: 8px;
+
+    &:hover {
+      transform: none;
+    }
   }
 `;
 
@@ -80,6 +85,12 @@ const Watermark = styled.span<{ $mark: "X" | "O" }>`
     transform: scale(1.08) rotate(-6deg);
     opacity: 0.22;
   }
+
+  @media (max-width: 720px) {
+    font-size: 72px;
+    bottom: -12px;
+    opacity: 0.1;
+  }
 `;
 
 const TurnRail = styled.span<{ $on: boolean; $id: PlayerId; $mark: "X" | "O" }>`
@@ -97,23 +108,38 @@ const TurnRail = styled.span<{ $on: boolean; $id: PlayerId; $mark: "X" | "O" }>`
     $on ? ($mark === "X" ? theme.x : theme.o) : theme.textFaint};
   animation: ${({ $on }) => ($on ? turnGlow : waitPulse)} ${({ $on }) => ($on ? "1.5s" : "2.4s")}
     ease-in-out infinite;
+
+  @media (max-width: 720px) {
+    display: none;
+  }
 `;
 
-const Head = styled.div`
+const Head = styled.div<{ $id: PlayerId }>`
   position: relative;
   z-index: 1;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
+
+  @media (max-width: 720px) {
+    align-items: center;
+    flex-direction: ${({ $id }) => ($id === "p2" ? "row-reverse" : "row")};
+  }
 `;
 
-const Identity = styled.div`
+const Identity = styled.div<{ $id: PlayerId }>`
   display: flex;
   align-items: flex-start;
   gap: 10px;
   min-width: 0;
   flex: 1;
+
+  @media (max-width: 720px) {
+    align-items: center;
+    flex-direction: ${({ $id }) => ($id === "p2" ? "row-reverse" : "row")};
+    text-align: ${({ $id }) => ($id === "p2" ? "right" : "left")};
+  }
 `;
 
 const Avatar = styled.div<{ $mark: "X" | "O"; $active: boolean }>`
@@ -137,6 +163,42 @@ const Avatar = styled.div<{ $mark: "X" | "O"; $active: boolean }>`
   ${Card}:hover & {
     transform: scale(1.08);
   }
+
+  @media (max-width: 720px) {
+    display: none;
+  }
+`;
+
+const EditOrb = styled.button<{ $mark: "X" | "O"; $active: boolean }>`
+  display: none;
+  appearance: none;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 50%;
+  place-items: center;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  background: ${({ $mark, theme }) => ($mark === "X" ? theme.xSoft : theme.oSoft)};
+  color: ${({ $mark, theme }) => ($mark === "X" ? theme.x : theme.o)};
+  border: 1.5px solid
+    ${({ $active, $mark, theme }) =>
+      $active ? ($mark === "X" ? theme.x : theme.o) : theme.borderStrong};
+  transition: transform 180ms ease, box-shadow 180ms ease;
+  animation: ${({ $active }) => ($active ? avatarPulse : "none")} 1.6s ease infinite;
+
+  &:hover {
+    transform: scale(1.06);
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  @media (max-width: 720px) {
+    display: grid;
+  }
 `;
 
 const NameWrap = styled.div`
@@ -154,12 +216,20 @@ const Name = styled.h2`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+
+  @media (max-width: 720px) {
+    font-size: 18px;
+  }
 `;
 
 const Hint = styled.p`
   margin: 2px 0 0;
   font-size: 11px;
   color: ${({ theme }) => theme.textFaint};
+
+  @media (max-width: 720px) {
+    display: none;
+  }
 `;
 
 const NameInput = styled.input`
@@ -196,6 +266,13 @@ const MarkBadge = styled.div<{ $mark: "X" | "O" }>`
   ${Card}:hover & {
     animation: ${markBob} 700ms ease;
   }
+
+  @media (max-width: 720px) {
+    width: 38px;
+    height: 38px;
+    font-size: 22px;
+    border-radius: 10px;
+  }
 `;
 
 const ScoreRow = styled.div`
@@ -214,6 +291,10 @@ const Score = styled.div<{ $pulse: boolean }>`
   letter-spacing: -0.04em;
   line-height: 1;
   animation: ${({ $pulse }) => ($pulse ? scorePop : "none")} 420ms ease;
+
+  @media (max-width: 720px) {
+    font-size: 28px;
+  }
 `;
 
 const Actions = styled.div`
@@ -222,6 +303,10 @@ const Actions = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+
+  @media (max-width: 720px) {
+    display: none;
+  }
 `;
 
 const Stats = styled.div`
@@ -239,6 +324,10 @@ const Stats = styled.div`
   ${StatValue} {
     font-size: 14px;
   }
+
+  @media (max-width: 720px) {
+    display: none;
+  }
 `;
 
 const Saved = styled.span`
@@ -247,20 +336,166 @@ const Saved = styled.span`
   align-self: center;
 `;
 
+const Backdrop = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: ${({ theme }) =>
+    theme.name === "dark" ? "rgba(6, 7, 10, 0.88)" : "rgba(28, 25, 20, 0.62)"};
+  display: grid;
+  place-items: end center;
+  padding: 0;
+
+  @media (min-width: 721px) {
+    place-items: center;
+    padding: 24px;
+  }
+`;
+
+const Sheet = styled.div`
+  width: min(440px, 100%);
+  max-height: min(88dvh, 720px);
+  background: ${({ theme }) => theme.surfaceRaised};
+  border: 1px solid ${({ theme }) => theme.border};
+  border-radius: 20px 20px 0 0;
+  box-shadow: ${({ theme }) => theme.shadow};
+  padding: 18px 18px calc(18px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow: auto;
+
+  @media (min-width: 721px) {
+    border-radius: 16px;
+    padding: 22px;
+  }
+`;
+
+const SheetHead = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+`;
+
+const SheetTitle = styled.h2`
+  margin: 0;
+  font-family: var(--font-display), serif;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+`;
+
+const SheetMark = styled.span<{ $mark: "X" | "O" }>`
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display), serif;
+  font-size: 22px;
+  font-weight: 600;
+  background: ${({ $mark, theme }) => ($mark === "X" ? theme.xSoft : theme.oSoft)};
+  color: ${({ $mark, theme }) => ($mark === "X" ? theme.x : theme.o)};
+  border: 1px solid currentColor;
+`;
+
+const SheetActions = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+`;
+
+const SheetStats = styled.div`
+  ${StatGrid} {
+    gap: 8px 14px;
+  }
+`;
+
+function PlayerStats({ id }: { id: PlayerId }) {
+  const { state } = useGame();
+  const player = state.players[id];
+
+  return (
+    <StatGrid>
+      <StatItem>
+        <Label>Wins</Label>
+        <StatValue>{player.wins}</StatValue>
+      </StatItem>
+      <StatItem>
+        <Label>Losses</Label>
+        <StatValue>{player.losses}</StatValue>
+      </StatItem>
+      <StatItem>
+        <Label>Draws</Label>
+        <StatValue>{player.draws}</StatValue>
+      </StatItem>
+      <StatItem>
+        <Label>Win rate</Label>
+        <StatValue>{winRate(player)}%</StatValue>
+      </StatItem>
+      <StatItem>
+        <Label>Played</Label>
+        <StatValue>{gamesPlayed(player)}</StatValue>
+      </StatItem>
+      <StatItem>
+        <Label>Rounds</Label>
+        <StatValue>{player.roundsWon}</StatValue>
+      </StatItem>
+      <StatItem>
+        <Label>Streak</Label>
+        <StatValue>{player.currentStreak}</StatValue>
+      </StatItem>
+      <StatItem>
+        <Label>Best</Label>
+        <StatValue>{player.bestStreak}</StatValue>
+      </StatItem>
+    </StatGrid>
+  );
+}
+
 export function PlayerCard({ id }: { id: PlayerId }) {
   const { state, setName, clickSound } = useGame();
   const player = state.players[id];
   const [editing, setEditing] = useState(false);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [draft, setDraft] = useState(player.name);
   const [saved, setSaved] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const active = state.status === "playing" && state.currentTurn === id;
   const pulse = state.status !== "playing" && state.winner === id;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!sheetOpen) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSheetOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [sheetOpen]);
 
   const startEdit = () => {
     setDraft(player.name);
     setEditing(true);
     setSaved(false);
     clickSound();
+  };
+
+  const openSheet = () => {
+    setDraft(player.name);
+    setSaved(false);
+    setSheetOpen(true);
+    clickSound();
+  };
+
+  const closeSheet = () => {
+    setDraft(player.name);
+    setSheetOpen(false);
   };
 
   const cancel = () => {
@@ -276,6 +511,16 @@ export function PlayerCard({ id }: { id: PlayerId }) {
     window.setTimeout(() => setSaved(false), 1600);
   };
 
+  const saveSheet = () => {
+    setName(id, draft);
+    setSaved(true);
+    clickSound();
+    window.setTimeout(() => {
+      setSaved(false);
+      setSheetOpen(false);
+    }, 700);
+  };
+
   return (
     <Card $active={active} $mark={player.mark} $id={id} aria-label={`${player.name}, ${player.mark}`}>
       <Watermark $mark={player.mark} aria-hidden>
@@ -284,11 +529,21 @@ export function PlayerCard({ id }: { id: PlayerId }) {
       <TurnRail $on={active} $id={id} $mark={player.mark}>
         {active ? "Your turn" : "Waiting"}
       </TurnRail>
-      <Head>
-        <Identity>
+      <Head $id={id}>
+        <Identity $id={id}>
           <Avatar $mark={player.mark} $active={active} aria-hidden>
             {initials(player.name)}
           </Avatar>
+          <EditOrb
+            type="button"
+            $mark={player.mark}
+            $active={active}
+            onClick={openSheet}
+            aria-label={`Edit ${player.name}`}
+            title="Edit player"
+          >
+            ✎
+          </EditOrb>
           <NameWrap>
             {editing ? (
               <NameInput
@@ -342,41 +597,59 @@ export function PlayerCard({ id }: { id: PlayerId }) {
       </ScoreRow>
 
       <Stats>
-        <StatGrid>
-          <StatItem>
-            <Label>Wins</Label>
-            <StatValue>{player.wins}</StatValue>
-          </StatItem>
-          <StatItem>
-            <Label>Losses</Label>
-            <StatValue>{player.losses}</StatValue>
-          </StatItem>
-          <StatItem>
-            <Label>Draws</Label>
-            <StatValue>{player.draws}</StatValue>
-          </StatItem>
-          <StatItem>
-            <Label>Win rate</Label>
-            <StatValue>{winRate(player)}%</StatValue>
-          </StatItem>
-          <StatItem>
-            <Label>Played</Label>
-            <StatValue>{gamesPlayed(player)}</StatValue>
-          </StatItem>
-          <StatItem>
-            <Label>Rounds</Label>
-            <StatValue>{player.roundsWon}</StatValue>
-          </StatItem>
-          <StatItem>
-            <Label>Streak</Label>
-            <StatValue>{player.currentStreak}</StatValue>
-          </StatItem>
-          <StatItem>
-            <Label>Best</Label>
-            <StatValue>{player.bestStreak}</StatValue>
-          </StatItem>
-        </StatGrid>
+        <PlayerStats id={id} />
       </Stats>
+
+      {mounted && sheetOpen
+        ? createPortal(
+            <Backdrop role="presentation" onClick={closeSheet}>
+              <Sheet
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby={`player-sheet-${id}`}
+                onClick={(event) => event.stopPropagation()}
+              >
+                <SheetHead>
+                  <SheetTitle id={`player-sheet-${id}`}>{player.name}</SheetTitle>
+                  <SheetMark $mark={player.mark} aria-hidden>
+                    {player.mark}
+                  </SheetMark>
+                </SheetHead>
+
+                <div>
+                  <Label>Player name</Label>
+                  <NameInput
+                    value={draft}
+                    autoFocus
+                    maxLength={18}
+                    placeholder={id === "p1" ? "e.g. Umar" : "e.g. Ahmad"}
+                    aria-label={`Edit ${id === "p1" ? "player one" : "player two"} name`}
+                    onChange={(event) => setDraft(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" && draft.trim()) saveSheet();
+                      if (event.key === "Escape") closeSheet();
+                    }}
+                  />
+                </div>
+
+                <SheetActions>
+                  <Button type="button" $tone="ghost" onClick={closeSheet}>
+                    Cancel
+                  </Button>
+                  <Button type="button" $tone="primary" onClick={saveSheet} disabled={!draft.trim()}>
+                    {saved ? "Saved" : "Save name"}
+                  </Button>
+                </SheetActions>
+
+                <SheetStats>
+                  <Label>Match score · {state.matchScore[id]}</Label>
+                  <PlayerStats id={id} />
+                </SheetStats>
+              </Sheet>
+            </Backdrop>,
+            document.body,
+          )
+        : null}
     </Card>
   );
 }

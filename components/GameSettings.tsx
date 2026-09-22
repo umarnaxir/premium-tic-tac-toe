@@ -63,6 +63,8 @@ export function GameSettings() {
     setFirstTo,
     swapMarks,
     requestClearHistory,
+    requestNewGame,
+    requestResetMatch,
     clickSound,
   } = useGame();
 
@@ -175,6 +177,19 @@ export function GameSettings() {
         Swap X and O
       </Button>
       <Hint>Marks can be swapped before the first move of a round.</Hint>
+
+      <Group>
+        <Eyebrow>Match</Eyebrow>
+        <PillRow>
+          <Button type="button" $tone="primary" onClick={requestNewGame}>
+            New Game
+          </Button>
+          <Button type="button" $tone="ghost" onClick={requestResetMatch}>
+            Reset Match
+          </Button>
+        </PillRow>
+        <Hint>New Game and full match resets live here on phone.</Hint>
+      </Group>
 
       <Group>
         <Eyebrow>Keyboard</Eyebrow>
